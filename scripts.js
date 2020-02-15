@@ -29,10 +29,11 @@ function operate(operator, a, b) {
     }
 }
 let numStr = '';
-let num, runningTotal;
+let num, runningTotal, answer;
 let numArray = [];
 let opArray = [];
-let opIndex;
+let addSubArray = [], opArrayAddSub = [];
+let opIndex, multIndex, divIndex;
 let screen = document.getElementById('calc-screen');
 
 let digits = document.querySelectorAll('.digit');
@@ -63,41 +64,65 @@ function operatorClick() {
 
 function runEquals() {
     storeNum();
-    let i = 0;
-    opArray.forEach(function(element){
-        
-        opIndex = opArray.indexOf(element);
-        console.log(opIndex);
-        if (element === 'multiply'|| element == 'divide') {
-            if (opIndex === 0) {
-               runningTotal = operate(element, numArray[opIndex], numArray[opIndex + 1]);
+    let multDivResult;
+    // Clear multiplication and division first
+    while (opArray.includes('multiply') || opArray.includes('divide')) {
+        multIndex = opArray.indexOf('multiply');
+        //console.log("Mult Index: " + multIndex);
+        divIndex = opArray.indexOf('divide');
+        //console.log("Div index: " + divIndex);
+
+        if (multIndex > -1) {
+            if (multIndex < divIndex || divIndex === -1) {
+                let product = operate(opArray[multIndex], numArray[multIndex], numArray[multIndex + 1]);
+                console.log(product);
+                numArray[multIndex + 1] = product;
+                multDivResult = product;
+                numArray.splice(multIndex, 1);
+                opArray.splice(multIndex, 1);
+
             } 
-            else {
-            runningTotal = operate(element, runningTotal, numArray[opIndex + 1]);
-            console.log(runningTotal);
-            }
-            opArray[opIndex] = 'cleared' + i;
-            i++
-        
         }
-    });
-    /* opArray.forEach(function(element){
-        opIndex = opArray.indexOf(element);
-        console.log(opIndex);
-        if (element === 'add'|| element == 'subtract') {
-            if (opIndex === 0) {
-               runningTotal = operate(element, numArray[opIndex], numArray[opIndex + 1]);
-            } 
-            else {
-            runningTotal = operate(element, runningTotal, numArray[opIndex + 1]);
-            console.log(runningTotal);
+
+        if (divIndex > -1) {
+            if (divIndex < multIndex || multIndex === -1) {
+                let quotient = operate(opArray[divIndex], numArray[divIndex], numArray[divIndex + 1]);
+                console.log(quotient);
+                numArray[divIndex + 1] = quotient;
+                multDivResult = quotient;
+                numArray.splice(divIndex, 1);
+                opArray.splice(divIndex, 1);
             }
-            opArray[opIndex] = 'cleared' + i;
-            i++
-        
         }
-    }); */
+
+    }
+    // perform addition and subtraction if needed. Otherwise return final product/quotient
+    if (opArray.includes('add') || opArray.includes('subtract')){
+        opArray.forEach(function(element){
+            let i = 0;
+            opIndex = opArray.indexOf(element);
+            console.log(opIndex);
+            if (element === 'add'|| element == 'subtract') {
+                if (opIndex === 0) {
+                runningTotal = operate(element, numArray[opIndex], numArray[opIndex + 1]);
+                } 
+                else {
+                runningTotal = operate(element, runningTotal, numArray[opIndex + 1]);
+                console.log(runningTotal);
+                }
+                opArray[opIndex] = 'cleared' + i;
+                i++
+            
+            }
+        });
+    } else {
+        runningTotal = multDivResult;
+    }
     console.log(runningTotal);
+    screen.textContent = runningTotal;
+    return runningTotal;
+
+    
 }
 
 function storeNum() {
